@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vellum — Strategic Planner 2026 v6</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #eee8dc;
+  --bg2:      #e6dfd3;
+  --surface:  #faf6ef;
+  --surface2: #f4ede2;
+  --border:   #c4b99e;
+  --border2:  #a89880;
+  --gold:     #a0780a;
+  --goldhi:   #c99a18;
+  --goldbg:   #f5e8c0;
+  --red:      #8b1a1a;
+  --redhi:    #c0392b;
+  --ink:      #161210;
+  --ink2:     #2a2218;
+  --mid:      #4e4438;
+  --muted:    #7a6e60;
+  --rule:     #d0c8b8;
+  --ok:       #1a4a28;
+  --okbg:     #d4ead8;
+  --sb:       #1c1a14;
+  --sb2:      #242018;
+  --sb3:      #2e2820;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;}
+body{background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;}
+
+/* ═══ LOADER ═══════════════════════════════════════════════════════════════ */
+#loader{
+  position:fixed;inset:0;background:var(--ink);z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+}
+.ll{font-family:'Cormorant',serif;font-size:48px;font-weight:500;letter-spacing:0.2em;color:#f0ead8;text-transform:uppercase;}
+.ll span{color:var(--goldhi);}
+.lb{width:220px;height:1px;background:#2a2418;position:relative;overflow:hidden;}
+.lb::after{content:'';position:absolute;left:-90px;top:0;width:90px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--goldhi),transparent);
+  animation:sw 1.4s ease-in-out infinite;}
+@keyframes sw{0%{left:-90px}100%{left:220px}}
+.lt{font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:#555;font-weight:400;}
+
+/* ═══ MODAL OVERLAY ════════════════════════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(8,6,4,0.82);
+  display:none;align-items:center;justify-content:center;z-index:800;
+  backdrop-filter:blur(3px);
+}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  padding:44px 48px;max-width:500px;width:92%;position:relative;
+  box-shadow:0 32px 80px rgba(0,0,0,0.4);
+}
+.modal-x{
+  position:absolute;top:16px;right:18px;background:none;border:none;
+  font-size:20px;color:var(--muted);cursor:pointer;line-height:1;
+  transition:color 0.15s;padding:4px 8px;
+}
+.modal-x:hover{color:var(--ink);}
+.m-eye{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:8px;}
+.m-title{font-family:'Cormorant',serif;font-size:28px;font-weight:500;color:var(--ink);margin-bottom:12px;}
+.m-sub{font-size:13px;color:var(--mid);line-height:1.8;margin-bottom:28px;}
+.m-sub code{background:var(--bg2);padding:1px 6px;font-size:11px;color:var(--ink2);letter-spacing:0.02em;}
+.fl{margin-bottom:16px;}
+.fl label{display:block;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:6px;}
+.fl input{width:100%;padding:11px 14px;border:1px solid var(--border);background:var(--bg);
+  font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color 0.2s;}
+.fl input:focus{border-color:var(--gold);}
+.m-btn{width:100%;padding:13px;background:var(--ink);color:var(--bg);border:none;
+  font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;
+  cursor:pointer;font-weight:500;margin-bottom:10px;transition:background 0.2s;}
+.m-btn:hover{background:var(--ink2);}
+.m-link{display:block;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;}
+.m-link:hover{color:var(--gold);}
+
+/* ═══ LAYOUT ════════════════════════════════════════════════════════════════ */
+#appShell{display:flex;flex-direction:column;height:100vh;}
+
+/* ═══ TOPBAR ════════════════════════════════════════════════════════════════ */
+#topbar{
+  height:58px;background:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;flex-shrink:0;
+  border-bottom:2px solid var(--gold);
+  position:relative;z-index:10;
+}
+.tb-logo{display:flex;flex-direction:column;gap:2px;}
+.tb-wordmark{font-family:'Cormorant',serif;font-size:19px;font-weight:600;
+  letter-spacing:0.2em;color:#f0ead8;text-transform:uppercase;}
+.tb-wordmark em{color:var(--goldhi);font-style:normal;}
+.tb-sub{font-size:8px;letter-spacing:0.3em;text-transform:uppercase;color:#444;font-weight:400;}
+.tb-mid{text-align:center;}
+.tb-date{font-family:'Cormorant',serif;font-size:15px;font-weight:400;color:#ccc;letter-spacing:0.05em;}
+.tb-time{font-size:10px;letter-spacing:0.2em;color:#555;margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:12px;}
+.sync-pill{font-size:8px;letter-spacing:0.22em;text-transform:uppercase;
+  padding:5px 12px;border:1px solid;font-weight:500;transition:all 0.3s;}
+.sp-ok{color:#6bcf84;border-color:#6bcf84;background:rgba(107,207,132,0.08);}
+.sp-sv{color:var(--goldhi);border-color:var(--goldhi);background:rgba(201,154,24,0.08);}
+.sp-er{color:#e06060;border-color:#e06060;background:rgba(220,80,80,0.08);}
+.sp-lc{color:#666;border-color:#333;}
+.tb-btn{background:none;border:1px solid #333;padding:6px 14px;
+  font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;
+  text-transform:uppercase;color:#666;cursor:pointer;transition:all 0.2s;}
+.tb-btn:hover{border-color:var(--goldhi);color:var(--goldhi);}
+
+/* ═══ BODY ROW ══════════════════════════════════════════════════════════════ */
+#bodyRow{display:flex;flex:1;overflow:hidden;}
+
+/* ═══ SIDEBAR ═══════════════════════════════════════════════════════════════ */
+#sidebar{
+  width:256px;flex-shrink:0;
+  background:var(--sb);
+  display:flex;flex-direction:column;
+  overflow-y:auto;border-right:1px solid #2a2218;
+}
+.sb-sec{padding:20px 20px 4px;}
+.sb-sec-lbl{font-size:8px;letter-spacing:0.32em;text-transform:uppercase;
+  color:var(--gold);font-weight:500;margin-bottom:10px;}
+.nav-btn{display:block;width:100%;text-align:left;padding:9px 14px;
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:300;color:#888;
+  background:none;border:none;border-left:3px solid transparent;
+  cursor:pointer;transition:all 0.15s;letter-spacing:0.02em;}
+.nav-btn:hover{color:#ddd;background:rgba(255,255,255,0.03);}
+.nav-btn.active{color:#f0ead8;border-left-color:var(--goldhi);
+  background:rgba(201,154,24,0.08);font-weight:500;}
+.nav-btn.today-n{color:var(--goldhi);font-weight:500;}
+
+.sb-rule{height:1px;background:#2a2218;margin:12px 16px;}
+
+/* mini cal */
+.mc{padding:0 14px 16px;}
+.mc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.mc-m{font-family:'Cormorant',serif;font-size:14px;font-weight:500;color:#ccc;letter-spacing:0.06em;}
+.mc-nav{background:none;border:none;color:#555;cursor:pointer;font-size:14px;padding:2px 6px;transition:color 0.15s;}
+.mc-nav:hover{color:var(--goldhi);}
+.mc-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;}
+.mc-dl{font-size:8px;text-align:center;color:#444;padding:3px 0;letter-spacing:0.08em;}
+.mc-d{font-size:10px;text-align:center;padding:5px 2px;cursor:pointer;
+  color:#777;transition:all 0.12s;position:relative;border-radius:1px;}
+.mc-d:hover{background:rgba(255,255,255,0.06);color:#ccc;}
+.mc-d.tod{background:var(--gold);color:#f0ead8;font-weight:600;}
+.mc-d.sel:not(.tod){background:#3a3020;color:#f0ead8;font-weight:500;}
+.mc-d.om{color:#2e2820;}
+.mc-d.ht::after{content:'';position:absolute;bottom:2px;left:50%;
+  transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--goldhi);}
+.mc-d.tod.ht::after{background:#f0ead8;}
+
+/* stats */
+.sb-stats{margin:0 14px 0;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid #2a2218;}
+.st-row{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;border-bottom:1px solid #222;font-size:13px;}
+.st-row:last-child{border:none;}
+.st-l{color:#666;}
+.st-v{color:#ccc;font-weight:500;}
+
+/* creds */
+.sb-creds{margin:12px 14px 0;padding:14px;background:rgba(160,120,10,0.06);
+  border:1px solid rgba(160,120,10,0.2);}
+.sc-title{font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:12px;}
+.sc-row{margin-bottom:9px;}
+.sc-lbl{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:#555;margin-bottom:3px;}
+.sc-val{font-size:11px;color:#aaa;background:#141210;padding:5px 8px;
+  word-break:break-all;line-height:1.5;border:1px solid #222;}
+.sc-btn{width:100%;margin-top:10px;padding:8px;background:none;border:1px solid #333;
+  font-family:'Outfit',sans-serif;font-size:8px;letter-spacing:0.18em;
+  text-transform:uppercase;color:#666;cursor:pointer;transition:all 0.15s;}
+.sc-btn:hover{border-color:var(--goldhi);color:var(--goldhi);}
+
+.sb-foot{margin-top:auto;padding:14px 18px;border-top:1px solid #222;
+  font-size:11px;color:#444;line-height:1.8;}
+
+/* ═══ MAIN ══════════════════════════════════════════════════════════════════ */
+#main{flex:1;overflow-y:auto;padding:28px 32px;background:var(--bg);}
+
+/* ═══ UNDO BAR ══════════════════════════════════════════════════════════════ */
+#undoBar{
+  position:fixed;bottom:0;left:256px;right:0;
+  background:var(--ink2);border-top:2px solid var(--gold);
+  padding:14px 32px;display:none;
+  align-items:center;justify-content:space-between;z-index:50;
+}
+.undo-msg{font-size:13px;color:#ccc;letter-spacing:0.02em;}
+.undo-msg strong{color:#f0ead8;font-weight:500;}
+.undo-right{display:flex;align-items:center;gap:16px;}
+.undo-timer{font-size:11px;color:#555;letter-spacing:0.1em;}
+.undo-btn{padding:8px 20px;background:var(--gold);color:var(--ink);border:none;
+  font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.2em;
+  text-transform:uppercase;cursor:pointer;font-weight:600;transition:background 0.15s;}
+.undo-btn:hover{background:var(--goldhi);}
+.undo-dismiss{background:none;border:none;color:#555;cursor:pointer;font-size:18px;padding:0 4px;transition:color 0.15s;}
+.undo-dismiss:hover{color:#aaa;}
+
+/* ═══ ROI STRIP ════════════════════════════════════════════════════════════ */
+.roi{display:grid;grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--border2);margin-bottom:24px;background:var(--surface);}
+.roi-c{padding:18px 20px;border-right:1px solid var(--rule);}
+.roi-c:last-child{border-right:none;}
+.roi-l{font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:500;}
+.roi-i{font-family:'Cormorant',serif;font-size:26px;font-weight:600;
+  color:var(--ink);background:none;border:none;
+  border-bottom:1px solid var(--rule);width:100%;outline:none;padding-bottom:2px;transition:border-color 0.2s;}
+.roi-i:focus{border-bottom-color:var(--gold);}
+
+/* ═══ NBA BAR ═══════════════════════════════════════════════════════════════ */
+.nba{padding:14px 20px;border-left:4px solid var(--gold);background:var(--goldbg);
+  margin-bottom:20px;display:flex;gap:20px;align-items:flex-start;}
+.nba-l{font-size:8px;letter-spacing:0.28em;text-transform:uppercase;
+  color:var(--gold);font-weight:600;white-space:nowrap;padding-top:3px;flex-shrink:0;}
+.nba-t{font-family:'Cormorant',serif;font-size:17px;font-weight:500;
+  color:var(--ink);font-style:italic;line-height:1.4;}
+
+/* ═══ VIEW HEADER ═══════════════════════════════════════════════════════════ */
+.vh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.vh-t{font-family:'Cormorant',serif;font-size:32px;font-weight:500;color:var(--ink);line-height:1.1;}
+.vh-s{font-size:12px;color:var(--muted);margin-top:5px;letter-spacing:0.04em;}
+.arr{display:flex;gap:4px;}
+.arr-btn{background:var(--surface);border:1px solid var(--border);padding:8px 15px;
+  font-size:15px;color:var(--mid);cursor:pointer;transition:all 0.15s;}
+.arr-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ═══ FILTER CHIPS ══════════════════════════════════════════════════════════ */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px;}
+.chip{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+  padding:6px 13px;border:1px solid var(--rule);background:var(--surface);
+  color:var(--mid);cursor:pointer;transition:all 0.15s;font-weight:500;}
+.chip:hover{border-color:var(--gold);color:var(--gold);}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.chip.on.ou{background:#102040;}
+.chip.on.co{background:#102010;}
+.chip.on.op{background:#3a200a;}
+.chip.on.pr{background:#28103a;}
+.chip.on.li{background:#082030;}
+
+/* ═══ TASK GROUP ════════════════════════════════════════════════════════════ */
+.tg{margin-bottom:22px;}
+.tg-h{display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:9px;border-bottom:1px solid var(--border2);margin-bottom:10px;}
+.tg-l{font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted);font-weight:500;}
+.tg-n{font-family:'Cormorant',serif;font-size:20px;color:var(--rule);font-weight:300;}
+
+/* ═══ TASK CARD ═════════════════════════════════════════════════════════════ */
+.tc{display:flex;align-items:flex-start;gap:14px;padding:15px 16px;
+  background:var(--surface);border:1px solid var(--rule);
+  margin-bottom:6px;transition:all 0.15s;position:relative;overflow:hidden;}
+.tc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+  background:var(--gold);transition:width 0.2s;opacity:0.15;}
+.tc:hover{border-color:var(--gold);box-shadow:0 2px 18px rgba(160,120,10,0.12);}
+.tc:hover::before{width:3px;}
+.tc.done{opacity:0.35;}
+.tc.ms-card{border-left:3px solid var(--gold);}
+.tc.ms-card::before{display:none;}
+
+.chk{width:18px;height:18px;border:1.5px solid var(--border2);flex-shrink:0;
+  margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;}
+.chk:hover{border-color:var(--gold);}
+.chk.on{background:var(--gold);border-color:var(--gold);}
+.chk.on::after{content:'✓';color:var(--ink);font-size:10px;font-weight:700;}
+
+.tc-b{flex:1;min-width:0;}
+.tc-title{font-size:14px;font-weight:400;color:var(--ink2);line-height:1.5;letter-spacing:0.01em;}
+.ms-card .tc-title::before{content:'◆  ';color:var(--gold);font-size:9px;vertical-align:middle;}
+.tc.done .tc-title{text-decoration:line-through;color:var(--muted);}
+.tc-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.tag{font-size:8px;letter-spacing:0.16em;text-transform:uppercase;
+  padding:2px 8px;border:1px solid;font-weight:500;}
+.t-ou{color:#10294a;border-color:#9ab2cc;background:#e4eef8;}
+.t-co{color:#10341a;border-color:#8ab898;background:#dceee4;}
+.t-op{color:#421e08;border-color:#c8a880;background:#f4e8d4;}
+.t-pr{color:#2a1040;border-color:#b498cc;background:#ede4f4;}
+.t-li{color:#082438;border-color:#88acc8;background:#d8eaf4;}
+.t-ms{color:var(--gold);border-color:var(--goldhi);background:var(--goldbg);}
+
+.del-btn{background:none;border:none;color:var(--rule);cursor:pointer;
+  font-size:15px;padding:2px 4px;transition:color 0.15s;flex-shrink:0;margin-top:1px;}
+.del-btn:hover{color:var(--redhi);}
+
+/* ═══ ADD TASK ══════════════════════════════════════════════════════════════ */
+.add-row{display:none;gap:6px;margin-bottom:6px;flex-wrap:wrap;
+  padding:14px 16px;background:var(--surface2);border:1px solid var(--border);}
+.add-row.open{display:flex;}
+.add-inp{flex:1;min-width:200px;padding:10px 13px;border:1px solid var(--border);
+  background:var(--surface);font-family:'Outfit',sans-serif;font-size:13px;
+  color:var(--ink);outline:none;transition:border-color 0.2s;}
+.add-inp:focus{border-color:var(--gold);}
+.add-sel{padding:10px 12px;border:1px solid var(--border);background:var(--surface);
+  font-family:'Outfit',sans-serif;font-size:12px;color:var(--ink);outline:none;cursor:pointer;}
+.add-go{padding:10px 18px;background:var(--ink);color:var(--bg);border:none;
+  font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;
+  text-transform:uppercase;cursor:pointer;font-weight:500;transition:background 0.15s;}
+.add-go:hover{background:var(--ink2);}
+.open-add{width:100%;padding:11px;border:1px dashed var(--border);background:none;
+  font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.open-add:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ═══ MONTH GRID ════════════════════════════════════════════════════════════ */
+.mg-hd{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;}
+.mg-dl{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--muted);text-align:center;padding:6px;font-weight:500;}
+.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.mg-c{background:var(--surface);border:1px solid var(--rule);
+  padding:9px 10px;min-height:90px;cursor:pointer;transition:all 0.15s;}
+.mg-c:hover{border-color:var(--gold);background:var(--goldbg);}
+.mg-c.mg-tod{border-color:var(--gold);border-width:2px;}
+.mg-c.mg-e{opacity:0.15;pointer-events:none;}
+.mg-dn{font-family:'Cormorant',serif;font-size:17px;font-weight:400;color:var(--ink);margin-bottom:5px;}
+.mg-c.mg-tod .mg-dn{color:var(--gold);font-weight:600;}
+.mg-tp{font-size:9px;color:var(--muted);border-left:2px solid var(--rule);
+  padding-left:5px;margin-bottom:3px;line-height:1.4;}
+.mg-tp.mst{border-left-color:var(--gold);color:var(--gold);}
+
+/* ═══ WEEK GRID ═════════════════════════════════════════════════════════════ */
+.wg{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.wc{background:var(--surface);border:1px solid var(--rule);padding:14px 12px;min-height:240px;}
+.wc.wt{border-color:var(--gold);border-width:2px;}
+.wc-dl{font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-weight:500;}
+.wc-n{font-family:'Cormorant',serif;font-size:24px;font-weight:400;color:var(--ink);margin-bottom:10px;}
+.wc.wt .wc-n{color:var(--gold);}
+.wt-t{font-size:11px;color:var(--ink2);padding:5px 0;border-bottom:1px solid var(--rule);
+  line-height:1.4;cursor:pointer;transition:color 0.12s;}
+.wt-t:hover{color:var(--gold);}
+.wt-t.wd{text-decoration:line-through;color:var(--muted);}
+
+/* ═══ ALL VIEW ══════════════════════════════════════════════════════════════ */
+.all-mo{font-size:10px;letter-spacing:0.28em;text-transform:uppercase;
+  color:var(--gold);padding:16px 0 10px;border-bottom:2px solid var(--border2);
+  margin-bottom:14px;font-weight:500;}
+
+/* ═══ TOAST ═════════════════════════════════════════════════════════════════ */
+#toast{position:fixed;top:74px;right:24px;background:var(--ok);color:#d4eed8;
+  padding:12px 20px;font-size:12px;letter-spacing:0.06em;opacity:0;
+  transition:opacity 0.25s;pointer-events:none;z-index:200;
+  border-left:3px solid #4acf6a;}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ll">Vellum<span>.</span></div>
+  <div class="lb"></div>
+  <div class="lt" id="ltxt">Initialising</div>
+</div>
+
+<!-- CREDENTIALS MODAL -->
+<div class="overlay" id="credModal">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal('credModal')">✕</button>
+    <div class="m-eye">Cloud Sync</div>
+    <div class="m-title">Sync Credentials</div>
+    <div class="m-sub">
+      Connect to JSONbin.io (free) to sync across all devices. Your data stays in your private bin.<br><br>
+      <strong>Setup:</strong> jsonbin.io → Sign up → Create bin with <code>{"v":"1"}</code> → Lock private → Copy Bin ID from URL. Then API Keys → copy X-Master-Key.
+    </div>
+    <div class="fl">
+      <label>Bin ID</label>
+      <input id="iBin" placeholder="e.g. 6601abc123def456789012ab" autocomplete="username"/>
+    </div>
+    <div class="fl">
+      <label>X-Master-Key</label>
+      <input id="iKey" placeholder="$2a$10$..." autocomplete="current-password"/>
+    </div>
+    <button class="m-btn" onclick="saveCredentials()">Save & Sync</button>
+    <span class="m-link" onclick="closeModal('credModal')">Cancel — keep current settings</span>
+  </div>
+</div>
+
+<!-- FIRST-RUN MODAL -->
+<div class="overlay" id="firstRunModal">
+  <div class="modal">
+    <div class="m-eye">Welcome</div>
+    <div class="m-title">Connect Your Planner</div>
+    <div class="m-sub">
+      Set up cloud sync to access your planner from any device.<br><br>
+      <strong>JSONbin.io (free):</strong> Create account → new bin with <code>{"v":"1"}</code> (set private) → copy Bin ID + X-Master-Key from API Keys section.
+    </div>
+    <div class="fl">
+      <label>Bin ID</label>
+      <input id="fBin" placeholder="e.g. 6601abc123def456789012ab" autocomplete="username"/>
+    </div>
+    <div class="fl">
+      <label>X-Master-Key</label>
+      <input id="fKey" placeholder="$2a$10$..." autocomplete="current-password"/>
+    </div>
+    <button class="m-btn" onclick="firstRunSetup()">Connect & Begin</button>
+    <span class="m-link" onclick="firstRunLocal()">Use this device only (no cloud sync)</span>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="appShell" style="display:none">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="tb-logo">
+      <div class="tb-wordmark">Vellum<em>.</em></div>
+      <div class="tb-sub">Strategic Operating Planner 2026 · v6</div>
+    </div>
+    <div class="tb-mid">
+      <div class="tb-date" id="hDate">—</div>
+      <div class="tb-time" id="hTime">—</div>
+    </div>
+    <div class="tb-right">
+      <div class="sync-pill sp-lc" id="syncPill">—</div>
+      <button class="tb-btn" onclick="openCredModal()">Credentials</button>
+    </div>
+  </div>
+
+  <!-- BODY ROW -->
+  <div id="bodyRow">
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sb-sec">
+        <div class="sb-sec-lbl">Navigate</div>
+        <button class="nav-btn today-n" onclick="goToday()">→ Today</button>
+        <button class="nav-btn active" id="n-month" onclick="sv('month')">Month View</button>
+        <button class="nav-btn" id="n-week"  onclick="sv('week')">Week View</button>
+        <button class="nav-btn" id="n-day"   onclick="sv('day')">Day View</button>
+        <button class="nav-btn" id="n-all"   onclick="sv('all')">All Tasks</button>
+        <div class="sb-rule"></div>
+        <div class="sb-sec-lbl" style="margin-top:8px">Calendar</div>
+      </div>
+      <div class="mc" id="miniCal"></div>
+      <div style="padding:0 14px 12px">
+        <div class="sb-sec-lbl">Overview</div>
+        <div class="sb-stats" id="sbStats"></div>
+      </div>
+      <div id="sbCreds"></div>
+      <div class="sb-foot">Close tab to exit.<br>All changes save automatically.</div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main"></div>
+  </div>
+
+  <!-- UNDO BAR -->
+  <div id="undoBar">
+    <div class="undo-msg">Deleted: <strong id="undoTaskName">—</strong></div>
+    <div class="undo-right">
+      <div class="undo-timer" id="undoTimer"></div>
+      <button class="undo-btn" onclick="undoDelete()">↩ Undo</button>
+      <button class="undo-dismiss" onclick="dismissUndo()">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// DEFAULT TASKS
+// ════════════════════════════════════════════════════════════
+const DEFAULTS = {
+
+  // ── WEEK OF MARCH 23 — COMPLETED SPRINT ─────────────────────
+  '2026-03-23':[
+    {id:'a1',title:'Follow-up: Pacaso (Day 5) — Signal Scan $750 offer',cat:'outreach',done:true},
+    {id:'a2',title:'Add Signal Scan to Stripe ($750 one-time payment link)',cat:'ops',done:true},
+    {id:'a3',title:'Enter all 8 cold prospects into HubSpot CRM',cat:'ops',done:true},
+    {id:'a4',title:'Update LinkedIn headline and About section',cat:'linkedin',done:true},
+    {id:'a5',title:'Systeme.io: re-verify vellummedia.co domain after DNS fix',cat:'ops',done:true},
+    {id:'a6',title:'NARPM outreach queued — Gail Phillips (CEO)',cat:'outreach',done:true},
+    {id:'a7',title:'Register @vellumadvisory Instagram (namespace only)',cat:'ops',done:true},
+  ],
+  '2026-03-24':[
+    {id:'b1',title:'Follow-up: Orchard (Day 4) — Signal Scan offer',cat:'outreach',done:true},
+    {id:'b2',title:'Follow-up: Stessa/Roofstock (Day 4) — Signal Scan offer',cat:'outreach',done:true},
+    {id:'b3',title:'Remove EosAI reference from client agreement',cat:'ops',done:true},
+    {id:'b4',title:'Category creation framing: "The Extraction Economy" confirmed',cat:'content',done:true},
+  ],
+  '2026-03-25':[
+    {id:'c1',title:'Cold email: Buildium/RealPage (AI Visibility 42 confirmed)',cat:'outreach',done:true},
+    {id:'c2',title:'Cold email: RentRedi (ryan@rentredi.com) — rebuilt with verified data',cat:'outreach',done:true},
+  ],
+  '2026-03-26':[
+    {id:'c3',title:'Follow-up: Orchard Day 8 (court.cunningham@orchard.com) — sent',cat:'outreach',done:true},
+    {id:'c4',title:'Follow-up: Stessa/Roofstock Day 8 (doug.brien@roofstock.com) — sent',cat:'outreach',done:true},
+    {id:'c5',title:'Follow-up: Pacaso Day 8 (austin@pacaso.com) — sent',cat:'outreach',done:true},
+    {id:'c6',title:'Vellum Master Tracker (Excel, 5 tabs) — built and live',cat:'ops',done:true},
+    {id:'c7',title:'Vellum Signal show: 10-episode Season 1 plan finalised',cat:'content',done:true},
+    {id:'c8',title:'Scripts: Vellum Signal Episodes 1 and 2 — complete',cat:'content',done:true},
+  ],
+  '2026-03-27':[
+    {id:'d1',title:'NARPM: Gail Phillips (gphillips@narpm.org) — sent 16:00 EET',cat:'outreach',done:true},
+    {id:'d2',title:'DoorLoop: Ori Tamuz Day 8 follow-up (ori@doorloop.com) — sent 15:45 EET',cat:'outreach',done:true},
+    {id:'d3',title:'DoorLoop diagnostic PDF — built (Clinical Luxury, one page)',cat:'content',done:true},
+    {id:'d4',title:'LinkedIn connection: Nancy Connolly CMO Bankrate — sent',cat:'outreach',done:true},
+    {id:'d5',title:'LinkedIn connection: Liz Gill Buildium/RealPage — sent (email bounced x2)',cat:'outreach',done:true},
+    {id:'d6',title:'PropTechBuzz outreach (ravi@proptechbuzz.com) — scheduled Mon Mar 30',cat:'outreach',done:true},
+    {id:'d7',title:'FinTech expansion approved: 25 companies, NerdWallet + Bankrate baselined',cat:'ops',done:true},
+    {id:'d8',title:'Content ecosystem: 7 lenses mapped for Extraction Economy',cat:'content',done:true},
+    {id:'d9',title:'Paid intelligence database concept — validated ($99/$499/mo tiers)',cat:'product',done:true},
+    {id:'d10',title:'Multimedia archive concept — validated ($199/mo tier)',cat:'product',done:true},
+    {id:'d11',title:'Strategic planner v6 — rebuilt and deployed to GitHub Pages',cat:'ops',done:true},
+  ],
+
+  // ── WEEKEND MARCH 28–29 ──────────────────────────────────────
+  '2026-03-28':[
+    {id:'e1',title:'Record Vellum Signal pilot — Episode 1 (The Founder Story)',cat:'content',done:false,ms:true},
+    {id:'e2',title:'Record Vellum Signal pilot — Episode 2 (The Concept Explainer)',cat:'content',done:false,ms:true},
+    {id:'e3',title:'Record Vellum Signal pilot — Episode 6 (The Opportunity)',cat:'content',done:false},
+    {id:'e4',title:'FinTech Semrush pulls: SoFi through Stash — 8 screenshots',cat:'ops',done:false},
+    {id:'e5',title:'24-month retroactive Semrush pulls: all 10 PropTech companies (switch to 2Y view)',cat:'ops',done:false},
+    {id:'e6',title:'Draft Vellum Brief Issue #1 — LinkedIn Newsletter (lead: extraction signature, anonymised, CTA to vellummedia.co)',cat:'linkedin',done:false},
+    {id:'e7',title:'Upload Master Tracker to Google Drive — convert to Google Sheets',cat:'ops',done:false},
+    {id:'e8',title:'Set up Substack publication: The Vellum Brief (free subscription, discovery-enabled)',cat:'ops',done:false},
+    {id:'e9',title:'Build Extraction Report Card #1 graphic in Canva (anonymised, brand palette) — ready for Mon post',cat:'content',done:false},
+  ],
+  '2026-03-29':[
+    {id:'ea',title:'Draft follow-ups: Clever RE, HomeLight, Houzeo (ready for Mon 15:00 EET)',cat:'outreach',done:false},
+    {id:'eb',title:'Draft journalist pitches: Inman News, The Real Deal, CRE Daily (personalised, Q1 Brief PDF attached — journalist exception to no-attachment rule)',cat:'content',done:false},
+    {id:'ec',title:'Draft Open Letter as LinkedIn long-form article (verbatim from vellummedia.co/openletter, anonymised)',cat:'linkedin',done:false},
+    {id:'ed',title:'Draft Twitter/X thread #1: "I audited 10 PropTech companies. Here is what the data shows." (8-10 tweets, one data point per tweet)',cat:'content',done:false},
+  ],
+
+  // ── MONDAY MARCH 30 ─────────────────────────────────────────
+  '2026-03-30':[
+    {id:'f1',title:'15:00 EET: Follow-up Clever RE — thomas@listwithclever.com (Day 11)',cat:'outreach',done:false},
+    {id:'f2',title:'15:00 EET: Follow-up HomeLight — drew@homelight.com (Day 11)',cat:'outreach',done:false},
+    {id:'f3',title:'15:00 EET: Follow-up Houzeo — amit.dhameja@houzeo.com (Day 11)',cat:'outreach',done:false},
+    {id:'f4',title:'15:00 EET: PropTechBuzz editorial submission (Q1 Brief) — ravi@proptechbuzz.com',cat:'outreach',done:false},
+    {id:'f5',title:'Send journalist pitches: Inman News, The Real Deal, CRE Daily (Q1 Brief PDF attached)',cat:'content',done:false},
+    {id:'f6',title:'Post Extraction Report Card #1 graphic — LinkedIn',cat:'linkedin',done:false,ms:true},
+    {id:'f7',title:'Publish Vellum Brief Issue #1 — LinkedIn Newsletter',cat:'linkedin',done:false,ms:true},
+    {id:'f8',title:'Publish Vellum Brief Issue #1 — Substack (mirror)',cat:'content',done:false},
+    {id:'f9',title:'Post Twitter/X thread #1 — "I audited 10 PropTech companies" data thread',cat:'content',done:false},
+    {id:'fa',title:'Post LinkedIn data point #1 (no video): one stat, sharp, no explanation',cat:'linkedin',done:false},
+  ],
+
+  // ── WEEK OF MARCH 30 ─────────────────────────────────────────
+  '2026-03-31':[
+    {id:'g1',title:'Cold email: Knock — sean@knock.com (not yet sent)',cat:'outreach',done:false},
+    {id:'g2',title:'Complete FinTech contact identification: SoFi through Stash',cat:'ops',done:false},
+    {id:'g3',title:'Draft FinTech cold emails (first 5 contacts)',cat:'outreach',done:false},
+    {id:'g4',title:'Publish Open Letter as LinkedIn long-form article (verbatim, anonymised)',cat:'linkedin',done:false,ms:true},
+    {id:'g5',title:'Submit Open Letter to Reddit: r/SEO — educational framing, link to openletter page',cat:'content',done:false},
+  ],
+  '2026-04-01':[
+    {id:'g6',title:'Weekly pipeline review — HubSpot status check',cat:'ops',done:false},
+    {id:'g7',title:'MILESTONE: Signal Scan research cohort — 10 spots announced',cat:'outreach',done:false,ms:true},
+    {id:'g8',title:'Submit Open Letter to Reddit: r/PropTech — educational framing',cat:'content',done:false},
+    {id:'g9',title:'Research: NAA, NMHC, MBA, FinTech association newsletter editors — identify contacts',cat:'outreach',done:false},
+  ],
+  '2026-04-02':[
+    {id:'ga',title:'Research: Fifth Wall, MetaProp, a16z FinTech newsletter editors — identify submission contacts',cat:'outreach',done:false},
+    {id:'gb',title:'Draft conference abstract: Blueprint Vegas (Sep 2026) — based on Q1 Brief',cat:'content',done:false},
+  ],
+  '2026-04-03':[
+    {id:'gc',title:'RentRedi Day 8 follow-up (ryan@rentredi.com)',cat:'outreach',done:false},
+    {id:'gd',title:'Submit conference abstract: Blueprint Vegas (Sep 2026)',cat:'outreach',done:false,ms:true},
+    {id:'ge',title:'Post LinkedIn data point #2 — one stat, no video',cat:'linkedin',done:false},
+  ],
+
+  // ── WEEK OF APRIL 7 ──────────────────────────────────────────
+  '2026-04-07':[
+    {id:'h1',title:'Extraction Report Card Post #2 — LinkedIn graphic',cat:'linkedin',done:false},
+    {id:'h2',title:'NARPM Day 11 follow-up if no reply (gphillips@narpm.org)',cat:'outreach',done:false},
+    {id:'h3',title:'DoorLoop Day 19 follow-up / close loop',cat:'outreach',done:false},
+    {id:'h4',title:'Vellum Signal Episode 1 — edit and publish to LinkedIn + YouTube',cat:'content',done:false,ms:true},
+    {id:'h5',title:'Post Twitter/X thread #2 — FinTech data thread',cat:'content',done:false},
+    {id:'h6',title:'Outreach: NAA newsletter editor — guest column / data submission pitch',cat:'outreach',done:false},
+    {id:'h7',title:'Outreach: NMHC newsletter editor — guest column / data submission pitch',cat:'outreach',done:false},
+    {id:'h8',title:'Post LinkedIn data point #3 — one stat, no video',cat:'linkedin',done:false},
+  ],
+
+  // ── WEEK OF APRIL 14 ─────────────────────────────────────────
+  '2026-04-14':[
+    {id:'i1',title:'Extraction Report Card Post #3 — LinkedIn graphic',cat:'linkedin',done:false},
+    {id:'i2',title:'Vellum Signal Episode 2 — publish to LinkedIn + YouTube',cat:'content',done:false},
+    {id:'i3',title:'FinTech cold email wave 1 (first 5 companies)',cat:'outreach',done:false,ms:true},
+    {id:'i4',title:'Bankrate: Nancy Connolly — follow up if LinkedIn connection accepted',cat:'outreach',done:false},
+    {id:'i5',title:'Outreach: Fifth Wall newsletter editor — data submission pitch',cat:'outreach',done:false},
+    {id:'i6',title:'Outreach: MetaProp newsletter editor — data submission pitch',cat:'outreach',done:false},
+    {id:'i7',title:'Submit Open Letter to Reddit: r/personalfinance — FinTech extraction angle',cat:'content',done:false},
+    {id:'i8',title:'Draft guest post: Search Engine Land — "The Extraction Economy: What PropTech and FinTech Companies Don\'t Know About Their AI Visibility Data"',cat:'content',done:false},
+    {id:'i9',title:'Post LinkedIn data point #4 — one stat, no video',cat:'linkedin',done:false},
+  ],
+
+  // ── WEEK OF APRIL 21 ─────────────────────────────────────────
+  '2026-04-21':[
+    {id:'j1',title:'Record Loom Video Proof Asset — 60-second Semrush demo',cat:'content',done:false},
+    {id:'j2',title:'Association outreach wave 2 — MBA, CFPB-adjacent FinTech associations',cat:'outreach',done:false},
+    {id:'j3',title:'Vellum Signal Episode 6 — publish to LinkedIn + YouTube',cat:'content',done:false},
+    {id:'j4',title:'The Vellum Brief Issue #2 — LinkedIn Newsletter + Substack mirror',cat:'linkedin',done:false},
+    {id:'j5',title:'Submit guest post to Search Engine Land',cat:'content',done:false,ms:true},
+    {id:'j6',title:'Post Twitter/X thread #3 — PropTech extraction pattern thread',cat:'content',done:false},
+    {id:'j7',title:'Research: Thoma Bravo / Vista Equity PropTech operating partners — identify contacts',cat:'outreach',done:false},
+    {id:'j8',title:'Draft conference abstract: Inman Connect — based on Q1 Brief',cat:'content',done:false},
+    {id:'j9',title:'Post LinkedIn data point #5 — one stat, no video',cat:'linkedin',done:false},
+  ],
+
+  // ── APRIL 30 ─────────────────────────────────────────────────
+  '2026-04-30':[
+    {id:'k1',title:'MILESTONE: Q1 PropTech AI Search Brief — final published version',cat:'content',done:false,ms:true},
+    {id:'k2',title:'Pipeline review: Signal Scan → Audit conversion rate',cat:'ops',done:false},
+    {id:'k3',title:'Submit conference abstract: Inman Connect',cat:'outreach',done:false},
+    {id:'k4',title:'Submit conference abstract: NAR NXT',cat:'outreach',done:false},
+    {id:'k5',title:'Outreach: a16z FinTech newsletter editor — data submission pitch',cat:'outreach',done:false},
+  ],
+
+  // ── MAY ──────────────────────────────────────────────────────
+  '2026-05-01':[
+    {id:'l1',title:'The Vellum Brief Issue #3 — LinkedIn Newsletter + Substack mirror',cat:'linkedin',done:false},
+    {id:'l2',title:'FinTech cold email wave 2 (next 10 companies)',cat:'outreach',done:false},
+    {id:'l3',title:'MILESTONE: Villain Reveal Video #1 — first named-company extraction reveal (camera confidence established)',cat:'content',done:false,ms:true},
+    {id:'l4',title:'Direct investor outreach: Thoma Bravo operating partner — PropTech portfolio angle',cat:'outreach',done:false},
+  ],
+  '2026-05-08':[
+    {id:'l5',title:'Submit guest post: Search Engine Journal — Extraction Economy angle',cat:'content',done:false},
+    {id:'l6',title:'Post Twitter/X thread #5 — FinTech extraction thread',cat:'content',done:false},
+    {id:'l7',title:'Post LinkedIn data point #7 — one stat, no video',cat:'linkedin',done:false},
+  ],
+  '2026-05-15':[
+    {id:'l8',title:'Extraction Report Card Post #5 — LinkedIn graphic',cat:'linkedin',done:false},
+    {id:'l9',title:'Evaluate Greek PropTech pro bono candidate (10k+ visits/mo)',cat:'ops',done:false},
+    {id:'la',title:'PAID DATABASE — Phase 1 Scoping: Define data architecture (AI Visibility scores, extraction signatures, 24-month trend lines, severity classifications, content category vulnerability maps)',cat:'product',done:false,ms:true},
+    {id:'lb',title:'PAID DATABASE — Phase 1 Scoping: Evaluate Notion + Memberstack vs Ghost + Stripe for MVP build',cat:'product',done:false},
+    {id:'lc',title:'PAID DATABASE — Phase 1 Scoping: Map content cadence — monthly data updates, video verdicts, blueprint downloads',cat:'product',done:false},
+    {id:'ld',title:'PAID DATABASE — Phase 1 Scoping: Define pricing tiers ($99/mo individual, $499/mo team) and subscriber journey',cat:'product',done:false},
+  ],
+
+  // ── JUNE ─────────────────────────────────────────────────────
+  '2026-06-01':[
+    {id:'m1',title:'The Vellum Brief Issue #4 — LinkedIn Newsletter + Substack mirror',cat:'linkedin',done:false},
+    {id:'m2',title:'MILESTONE: Methodology IP v1.0 — internal document complete',cat:'ops',done:false,ms:true},
+    {id:'m3',title:'Submit guest post: Moz Blog — Extraction Economy, SEO director audience',cat:'content',done:false},
+    {id:'m4',title:'Direct investor outreach: Vista Equity operating partner — FinTech portfolio angle',cat:'outreach',done:false},
+    {id:'m5',title:'PAID DATABASE — Phase 2 Build: Set up platform skeleton on chosen stack (Notion/Ghost)',cat:'product',done:false,ms:true},
+    {id:'m6',title:'PAID DATABASE — Phase 2 Build: Populate seed data — 10 PropTech + 5 FinTech companies, baseline AI Visibility scores',cat:'product',done:false},
+    {id:'m7',title:'PAID DATABASE — Phase 2 Build: Stripe integration — $99/mo individual and $499/mo team payment links',cat:'product',done:false},
+    {id:'m8',title:'PAID DATABASE — Phase 2 Build: Record first monthly video verdict (Christos, 5 min, gated)',cat:'product',done:false},
+    {id:'m9',title:'PAID DATABASE — Phase 2 Build: Upload first set of architectural blueprint PDFs (subscriber-only download)',cat:'product',done:false},
+  ],
+  '2026-06-15':[
+    {id:'ma',title:'MULTIMEDIA ARCHIVE — Phase 1 Scoping: Define content inventory (all Vellum Signal eps, Villain Reveals, future interviews)',cat:'product',done:false},
+    {id:'mb',title:'MULTIMEDIA ARCHIVE — Phase 1 Scoping: Evaluate hosting platform (Vimeo + Memberstack vs dedicated Webflow build)',cat:'product',done:false},
+    {id:'mc',title:'MULTIMEDIA ARCHIVE — Phase 1 Scoping: Map tier structure — $199/mo (data + video + monthly briefing)',cat:'product',done:false},
+    {id:'md',title:'MULTIMEDIA ARCHIVE — Phase 1 Scoping: Plan interactive chart embeds and extraction pattern animations',cat:'product',done:false},
+  ],
+  '2026-06-30':[
+    {id:'me',title:'MILESTONE: 3 paying clients — review and assess',cat:'ops',done:false,ms:true},
+    {id:'mf',title:'MILESTONE: First association briefing distributed',cat:'outreach',done:false,ms:true},
+    {id:'mg',title:'MILESTONE: Paid Intelligence Database MVP — soft launch to waitlist (target: 20 subscribers)',cat:'product',done:false,ms:true},
+    {id:'mh',title:'Pipeline review: VC newsletter response rates — adjust targeting if needed',cat:'ops',done:false},
+  ],
+
+  // ── JULY ─────────────────────────────────────────────────────
+  '2026-07-01':[
+    {id:'n0',title:'MULTIMEDIA ARCHIVE — Phase 2 Build: Build video archive platform behind paywall (not YouTube)',cat:'product',done:false,ms:true},
+    {id:'na',title:'MULTIMEDIA ARCHIVE — Phase 2 Build: Migrate all published Vellum Signal episodes to archive',cat:'product',done:false},
+    {id:'nb',title:'MULTIMEDIA ARCHIVE — Phase 2 Build: Build interactive traffic chart embeds + extraction pattern animations',cat:'product',done:false},
+    {id:'nc',title:'MULTIMEDIA ARCHIVE — Phase 2 Build: Stripe $199/mo tier live — data + video + monthly briefing bundle',cat:'product',done:false},
+  ],
+  '2026-07-08':[
+    {id:'n1',title:'MILESTONE: Publish Information Gain Index article — LinkedIn',cat:'linkedin',done:false,ms:true},
+    {id:'n2',title:'Vellum Signal Season 1 wrap — all 10 episodes published',cat:'content',done:false,ms:true},
+    {id:'n3',title:'MILESTONE: Multimedia Archive soft launch — $199/mo tier open',cat:'product',done:false,ms:true},
+    {id:'n4',title:'Post Twitter/X thread #8 — Season 1 wrap, 10 companies audited data summary',cat:'content',done:false},
+  ],
+  '2026-07-15':[
+    {id:'n5',title:'Paid Database: first monthly update cycle — refresh all AI Visibility scores, add 5 new companies',cat:'product',done:false},
+    {id:'n6',title:'Blueprint Vegas abstract confirmed — prepare speaker slides deck',cat:'ops',done:false},
+  ],
+
+  // ── SEPTEMBER ────────────────────────────────────────────────
+  '2026-09-01':[
+    {id:'o1',title:'MILESTONE: Blueprint Vegas conference appearance',cat:'ops',done:false,ms:true},
+    {id:'o2',title:'MILESTONE: Vellum Intelligence Feed v1.0 — full combined launch (paid database + multimedia archive)',cat:'product',done:false,ms:true},
+    {id:'o3',title:'Internal acquisition memo — Vellum positioning document',cat:'ops',done:false,ms:true},
+    {id:'o4',title:'Evaluate vellumadvisory.com domain purchase',cat:'ops',done:false},
+    {id:'o5',title:'Intelligence Sovereignty: founding article draft (post first client)',cat:'content',done:false},
+    {id:'o6',title:'Paid Database: Q3 data refresh — 30+ companies, severity classifications updated',cat:'product',done:false},
+    {id:'o7',title:'Direct investor outreach wave 2 — PE firms with FinTech portfolios',cat:'outreach',done:false},
+  ],
+
+  // ── NOVEMBER ─────────────────────────────────────────────────
+  '2026-11-01':[
+    {id:'p1',title:'MILESTONE: First major conference speaking slot — Inman Connect or NAR NXT',cat:'ops',done:false,ms:true},
+    {id:'p2',title:'MILESTONE: Methodology IP v2.0 — refined with client data',cat:'ops',done:false,ms:true},
+    {id:'p3',title:'Paid Database: Q4 data refresh + annual extraction report (subscriber-only PDF)',cat:'product',done:false},
+    {id:'p4',title:'Multimedia Archive: case study deep-dive #1 — full subscriber release',cat:'product',done:false},
+  ],
+
+  // ── DECEMBER ─────────────────────────────────────────────────
+  '2026-12-01':[
+    {id:'q1',title:'MILESTONE: Publish Vellum Signal Report Q4 (30+ companies audited)',cat:'content',done:false,ms:true},
+    {id:'q2',title:'Year-end review: revenue, pipeline, acquisition readiness',cat:'ops',done:false},
+  ],
+
+  // ── 2027 HORIZON ─────────────────────────────────────────────
+  '2027-02-01':[
+    {id:'r1',title:'MILESTONE: Methodology IP v2.0 full publication',cat:'ops',done:false,ms:true},
+  ],
+  '2027-06-01':[
+    {id:'r2',title:'Intelligence Sovereignty: SaaS MVP scoping begins',cat:'product',done:false,ms:true},
+  ],
+  '2028-01-01':[
+    {id:'r3',title:'MILESTONE: Formal acquisition conversations — Vellum',cat:'ops',done:false,ms:true},
+    {id:'r4',title:'Intelligence Sovereignty: enterprise tier launch',cat:'product',done:false,ms:true},
+  ],
+};
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+const API = 'https://api.jsonbin.io/v3/b';
+let BIN = localStorage.getItem('vb6') || '';
+let KEY = localStorage.getItem('vk6') || '';
+let useCloud = !!(BIN && KEY);
+let tasks = {}, roi = {revenue:'$0',clients:'0',pipeline:'$0',scans:'0'};
+let view = 'month', selD = new Date(), calM = new Date();
+let filt = 'all';
+let deleted = null, undoInterval = null, undoSecs = 0;
+
+// ════════════════════════════════════════════════════════════
+// CLOUD — FIXED: never overwrites existing data on connect
+// ════════════════════════════════════════════════════════════
+async function cloudLoad() {
+  try {
+    const r = await fetch(`${API}/${BIN}/latest`, { headers: {'X-Master-Key': KEY} });
+    if (!r.ok) return null;
+    const d = await r.json();
+    // Only return if it has actual task data — not just the stub {"v":"1"}
+    if (d.record && d.record.tasks) return d.record;
+    return null;
+  } catch { return null; }
+}
+
+async function cloudSave() {
+  const payload = JSON.stringify({tasks, roi});
+  localStorage.setItem('vd6', payload);
+  if (!useCloud) { setSP('lc'); return; }
+  setSP('sv');
+  try {
+    const r = await fetch(`${API}/${BIN}`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','X-Master-Key': KEY},
+      body: payload
+    });
+    setSP(r.ok ? 'ok' : 'er');
+  } catch { setSP('er'); }
+}
+
+function setSP(s) {
+  const el = document.getElementById('syncPill');
+  el.className = 'sync-pill';
+  const m = {ok:['sp-ok','Synced ✓'],sv:['sp-sv','Saving…'],er:['sp-er','Sync Error'],lc:['sp-lc','Local Only']};
+  const [c,t] = m[s]||['sp-lc','—'];
+  el.classList.add(c); el.textContent = t;
+}
+
+// ════════════════════════════════════════════════════════════
+// BOOT — loads existing data, never destroys it
+// ════════════════════════════════════════════════════════════
+async function boot() {
+  startClock();
+  const localRaw = localStorage.getItem('vd6');
+  const localData = localRaw ? JSON.parse(localRaw) : null;
+
+  if (!BIN && !KEY) {
+    // No credentials ever set
+    if (localData?.tasks) {
+      // Has local data → use it, offer to connect
+      tasks = localData.tasks; roi = localData.roi || roi;
+      setSP('lc'); hideLoader(); renderAll();
+    } else {
+      // Truly first run
+      hideLoader(); showOverlay('firstRunModal');
+    }
+    return;
+  }
+
+  // Has credentials — try cloud first
+  document.getElementById('ltxt').textContent = 'Syncing your data';
+  const remote = await cloudLoad();
+  if (remote) {
+    tasks = remote.tasks; roi = remote.roi || roi;
+    // Always keep local in sync with cloud
+    localStorage.setItem('vd6', JSON.stringify({tasks, roi}));
+    setSP('ok');
+  } else if (localData?.tasks) {
+    // Cloud empty/unreachable — use local (don't overwrite)
+    tasks = localData.tasks; roi = localData.roi || roi;
+    setSP(useCloud ? 'er' : 'lc');
+  } else {
+    // Nothing anywhere — load defaults and save
+    tasks = cp(DEFAULTS);
+    await cloudSave();
+  }
+
+  hideLoader(); renderAll();
+}
+
+function hideLoader() {
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('appShell').style.display = 'flex';
+}
+
+// ════════════════════════════════════════════════════════════
+// SETUP FLOWS
+// ════════════════════════════════════════════════════════════
+async function firstRunSetup() {
+  const b = document.getElementById('fBin').value.trim();
+  const k = document.getElementById('fKey').value.trim();
+  if (!b || !k) { alert('Please enter both the Bin ID and the X-Master-Key.'); return; }
+  BIN = b; KEY = k;
+  localStorage.setItem('vb6', BIN); localStorage.setItem('vk6', KEY);
+  useCloud = true;
+  hideOverlay('firstRunModal');
+  document.getElementById('ltxt').textContent = 'Connecting…';
+  document.getElementById('loader').style.display = 'flex';
+  document.getElementById('appShell').style.display = 'none';
+  // Try to load — if bin has real data use it, else seed defaults
+  const remote = await cloudLoad();
+  if (remote) { tasks = remote.tasks; roi = remote.roi || roi; }
+  else { tasks = cp(DEFAULTS); await cloudSave(); }
+  hideLoader(); renderAll();
+}
+
+function firstRunLocal() {
+  hideOverlay('firstRunModal');
+  tasks = cp(DEFAULTS);
+  localStorage.setItem('vd6', JSON.stringify({tasks, roi}));
+  setSP('lc'); renderAll();
+}
+
+async function saveCredentials() {
+  const b = document.getElementById('iBin').value.trim();
+  const k = document.getElementById('iKey').value.trim();
+  if (!b || !k) { alert('Please enter both fields.'); return; }
+  BIN = b; KEY = k;
+  localStorage.setItem('vb6', BIN); localStorage.setItem('vk6', KEY);
+  useCloud = true;
+  closeModal('credModal');
+  setSP('sv');
+  // Load from cloud — preserve existing data
+  const remote = await cloudLoad();
+  if (remote) { tasks = remote.tasks; roi = remote.roi || roi; }
+  else { await cloudSave(); } // Push current local data up
+  renderAll(); showToast('Credentials saved — cloud sync active');
+}
+
+function openCredModal() {
+  document.getElementById('iBin').value = BIN;
+  document.getElementById('iKey').value = KEY;
+  showOverlay('credModal');
+}
+
+// ════════════════════════════════════════════════════════════
+// CLOCK
+// ════════════════════════════════════════════════════════════
+function startClock() {
+  const DN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const tick = () => {
+    const n = new Date();
+    document.getElementById('hDate').textContent = `${DN[n.getDay()]}, ${n.getDate()} ${MN[n.getMonth()]} ${n.getFullYear()}`;
+    document.getElementById('hTime').textContent = n.toLocaleTimeString('en-GB');
+  };
+  tick(); setInterval(tick, 1000);
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════
+function renderAll() { buildMiniCal(); buildMain(); buildStats(); buildCreds(); }
+function sv(v) {
+  view = v;
+  ['month','week','day','all'].forEach(x => document.getElementById('n-'+x)?.classList.toggle('active', x===v));
+  buildMain();
+}
+function buildMain() {
+  if (view==='month') bMonth();
+  else if (view==='week') bWeek();
+  else if (view==='day') bDay();
+  else bAll();
+}
+
+// ════ MONTH ══════════════════════════════════════════════════
+function bMonth() {
+  const y=selD.getFullYear(),m=selD.getMonth();
+  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const tod=dk(new Date());
+  let h = `<div class="vh">
+    <div><div class="vh-t">${MN[m]} ${y}</div></div>
+    <div class="arr">
+      <button class="arr-btn" onclick="pm()">‹</button>
+      <button class="arr-btn" onclick="nm()">›</button>
+    </div>
+  </div>
+  <div class="mg-hd">`;
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => h += `<div class="mg-dl">${d}</div>`);
+  h += `</div><div class="mg">`;
+  const f = new Date(y,m,1); let sd = f.getDay(); sd = sd===0?6:sd-1;
+  for (let i=0;i<sd;i++) h += `<div class="mg-c mg-e"></div>`;
+  const dim = new Date(y,m+1,0).getDate();
+  for (let d=1;d<=dim;d++) {
+    const key = `${y}-${p2(m+1)}-${p2(d)}`;
+    const dt = (tasks[key]||[]).filter(t => filt==='all'||t.cat===filt);
+    const iT = key===tod; const ms = dt.filter(t=>t.ms); const pe = dt.filter(t=>!t.done).length;
+    h += `<div class="mg-c${iT?' mg-tod':''}" onclick="selDay('${key}')">
+      <div class="mg-dn">${d}</div>
+      ${ms.slice(0,2).map(t=>`<div class="mg-tp mst">◆ ${t.title.substring(0,22)}…</div>`).join('')}
+      ${pe>0&&!ms.length?`<div class="mg-tp">${pe} task${pe>1?'s':''}</div>`:''}
+    </div>`;
+  }
+  h += `</div>`;
+  document.getElementById('main').innerHTML = h;
+}
+function pm(){selD.setMonth(selD.getMonth()-1);calM=new Date(selD.getFullYear(),selD.getMonth(),1);buildMiniCal();bMonth();}
+function nm(){selD.setMonth(selD.getMonth()+1);calM=new Date(selD.getFullYear(),selD.getMonth(),1);buildMiniCal();bMonth();}
+
+// ════ WEEK ════════════════════════════════════════════════════
+function bWeek() {
+  const d=new Date(selD); const dy=d.getDay(); const diff=dy===0?6:dy-1;
+  d.setDate(d.getDate()-diff);
+  const wd=[]; for(let i=0;i<7;i++){wd.push(new Date(d));d.setDate(d.getDate()+1);}
+  const tod=dk(new Date()); const DN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let h = `<div class="vh">
+    <div><div class="vh-t">Week of ${wd[0].getDate()} — ${wd[6].getDate()}</div></div>
+    <div class="arr">
+      <button class="arr-btn" onclick="pw()">‹</button>
+      <button class="arr-btn" onclick="nw()">›</button>
+    </div>
+  </div><div class="wg">`;
+  wd.forEach((day,i) => {
+    const key=dk(day); const dt=(tasks[key]||[]).filter(t=>filt==='all'||t.cat===filt); const iT=key===tod;
+    h += `<div class="wc${iT?' wt':''}">
+      <div class="wc-dl">${DN[i]}</div>
+      <div class="wc-n">${day.getDate()}</div>
+      ${dt.map(t=>`<div class="wt-t${t.done?' wd':''}" onclick="tog('${key}','${t.id}')">${t.ms?'◆ ':''}${t.title}</div>`).join('')}
+    </div>`;
+  });
+  h += `</div>`;
+  document.getElementById('main').innerHTML = h;
+}
+function pw(){selD.setDate(selD.getDate()-7);bWeek();}
+function nw(){selD.setDate(selD.getDate()+7);bWeek();}
+
+// ════ DAY ═════════════════════════════════════════════════════
+function bDay() {
+  const key=dk(selD); const tod=dk(new Date()); const iT=key===tod;
+  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const all=(tasks[key]||[]);
+  const dt=filt==='all'?all:all.filter(t=>t.cat===filt);
+  const pe=dt.filter(t=>!t.done); const dn=dt.filter(t=>t.done);
+  const nba=pe.length>0?(pe.find(t=>t.cat==='outreach')||pe.find(t=>t.ms)||pe[0]).title:'No pending tasks.';
+
+  let h = `<div class="roi">
+    ${[['Revenue 2026','revenue'],['Paying Clients','clients'],['Pipeline Value','pipeline'],['Signal Scans Sold','scans']].map(([l,k])=>
+      `<div class="roi-c"><div class="roi-l">${l}</div><input class="roi-i" value="${roi[k]}" onchange="upRoi('${k}',this.value)"/></div>`
+    ).join('')}
+  </div>`;
+
+  if (iT) h += `<div class="nba"><div class="nba-l">Next Action</div><div class="nba-t">${nba}</div></div>`;
+
+  h += `<div class="vh">
+    <div>
+      <div class="vh-t">${DN[selD.getDay()]}, ${selD.getDate()} ${MN[selD.getMonth()]} ${selD.getFullYear()}</div>
+      <div class="vh-s">${dt.length} task${dt.length!==1?'s':''} · ${pe.length} pending</div>
+    </div>
+    <div class="arr">
+      <button class="arr-btn" onclick="pd()">‹</button>
+      <button class="arr-btn" onclick="nd()">›</button>
+    </div>
+  </div>
+  <div class="chips">
+    ${['all','outreach','content','ops','product','linkedin'].map(c=>{
+      const cls = {outreach:'ou',content:'co',ops:'op',product:'pr',linkedin:'li'}[c]||'';
+      return `<button class="chip${filt===c?' on':''} ${cls}" onclick="setF('${c}')">${c==='all'?'All':c[0].toUpperCase()+c.slice(1)}</button>`;
+    }).join('')}
+  </div>`;
+
+  if (pe.length) {
+    h += `<div class="tg"><div class="tg-h"><span class="tg-l">Pending</span><span class="tg-n">${pe.length}</span></div>`;
+    pe.forEach(t => h += tCard(key,t));
+    h += `</div>`;
+  }
+  if (dn.length) {
+    h += `<div class="tg"><div class="tg-h"><span class="tg-l">Completed</span><span class="tg-n">${dn.length}</span></div>`;
+    dn.forEach(t => h += tCard(key,t));
+    h += `</div>`;
+  }
+  h += addForm(key);
+  document.getElementById('main').innerHTML = h;
+}
+function pd(){selD.setDate(selD.getDate()-1);calM=new Date(selD.getFullYear(),selD.getMonth(),1);buildMiniCal();bDay();}
+function nd(){selD.setDate(selD.getDate()+1);calM=new Date(selD.getFullYear(),selD.getMonth(),1);buildMiniCal();bDay();}
+
+// ════ ALL ═════════════════════════════════════════════════════
+function bAll() {
+  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let h = `<div class="vh"><div><div class="vh-t">All Tasks</div><div class="vh-s">Complete 2026 timeline</div></div></div>
+  <div class="chips">
+    ${['all','outreach','content','ops','product','linkedin'].map(c=>{
+      const cls={outreach:'ou',content:'co',ops:'op',product:'pr',linkedin:'li'}[c]||'';
+      return `<button class="chip${filt===c?' on':''} ${cls}" onclick="setF('${c}')">${c==='all'?'All':c[0].toUpperCase()+c.slice(1)}</button>`;
+    }).join('')}
+  </div>`;
+  let lastM = '';
+  Object.keys(tasks).sort().forEach(key => {
+    const dt=(tasks[key]||[]).filter(t=>filt==='all'||t.cat===filt);
+    if (!dt.length) return;
+    const d=new Date(key+'T12:00:00');
+    const mo=`${MN[d.getMonth()]} ${d.getFullYear()}`;
+    if (mo!==lastM) { h+=`<div class="all-mo">${mo}</div>`; lastM=mo; }
+    h += `<div class="tg" style="margin-bottom:0">
+      <div class="tg-h" style="cursor:pointer" onclick="selDay('${key}')">
+        <span class="tg-l">${d.getDate()} ${MN[d.getMonth()].substring(0,3)}</span>
+        <span class="tg-n">${dt.filter(t=>!t.done).length}/${dt.length}</span>
+      </div>`;
+    dt.forEach(t => h += tCard(key,t));
+    h += `</div>`;
+  });
+  document.getElementById('main').innerHTML = h;
+}
+
+// ════ TASK CARD ════════════════════════════════════════════════
+function tCard(key, t) {
+  const cm = {outreach:'t-ou',content:'t-co',ops:'t-op',product:'t-pr',linkedin:'t-li'};
+  return `<div class="tc${t.done?' done':''}${t.ms?' ms-card':''}" id="tc-${t.id}">
+    <div class="chk${t.done?' on':''}" onclick="tog('${key}','${t.id}')"></div>
+    <div class="tc-b">
+      <div class="tc-title">${t.title}</div>
+      <div class="tc-tags">
+        <span class="tag ${cm[t.cat]||'t-op'}">${t.cat}</span>
+        ${t.ms?'<span class="tag t-ms">Milestone</span>':''}
+      </div>
+    </div>
+    <button class="del-btn" title="Delete task" onclick="delTask('${key}','${t.id}')">✕</button>
+  </div>`;
+}
+
+function addForm(key) {
+  return `<div style="margin-top:8px">
+    <div class="add-row" id="af-${key}">
+      <input class="add-inp" id="ai-${key}" placeholder="Describe new task…" onkeydown="if(event.key==='Enter')addTask('${key}')"/>
+      <select class="add-sel" id="ac-${key}">
+        <option value="outreach">Outreach</option>
+        <option value="content">Content</option>
+        <option value="ops" selected>Operations</option>
+        <option value="product">Product</option>
+        <option value="linkedin">LinkedIn</option>
+      </select>
+      <button class="add-go" onclick="addTask('${key}')">Add Task</button>
+    </div>
+    <button class="open-add" onclick="toggleAdd('${key}')">+ Add Task to This Day</button>
+  </div>`;
+}
+function toggleAdd(k){document.getElementById('af-'+k)?.classList.toggle('open');document.getElementById('ai-'+k)?.focus();}
+
+// ════ MINI CAL ═════════════════════════════════════════════════
+function buildMiniCal() {
+  const y=calM.getFullYear(), m=calM.getMonth();
+  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const tod=dk(new Date()); const sk=dk(selD);
+  let h = `<div class="mc-hd">
+    <button class="mc-nav" onclick="mcP()">‹</button>
+    <div class="mc-m">${MN[m]} ${y}</div>
+    <button class="mc-nav" onclick="mcN()">›</button>
+  </div><div class="mc-g">`;
+  ['M','T','W','T','F','S','S'].forEach(d => h+=`<div class="mc-dl">${d}</div>`);
+  const f=new Date(y,m,1); let sd=f.getDay(); sd=sd===0?6:sd-1;
+  for(let i=0;i<sd;i++){const p=new Date(y,m,-sd+i+1);h+=`<div class="mc-d om">${p.getDate()}</div>`;}
+  const dim=new Date(y,m+1,0).getDate();
+  for(let d=1;d<=dim;d++){
+    const key=`${y}-${p2(m+1)}-${p2(d)}`;
+    const iT=key===tod; const iS=key===sk; const has=(tasks[key]||[]).length>0;
+    let c='mc-d';if(iT)c+=' tod';else if(iS)c+=' sel';if(has)c+=' ht';
+    h+=`<div class="${c}" onclick="selDay('${key}')">${d}</div>`;
+  }
+  h+=`</div>`;
+  document.getElementById('miniCal').innerHTML = h;
+}
+function mcP(){calM.setMonth(calM.getMonth()-1);buildMiniCal();}
+function mcN(){calM.setMonth(calM.getMonth()+1);buildMiniCal();}
+
+function buildStats() {
+  let tot=0,dn=0; Object.values(tasks).forEach(a=>{tot+=a.length;dn+=a.filter(t=>t.done).length;});
+  const tp=(tasks[dk(new Date())]||[]).filter(t=>!t.done).length;
+  document.getElementById('sbStats').innerHTML=
+    `<div class="st-row"><span class="st-l">Today</span><span class="st-v">${tp} pending</span></div>
+     <div class="st-row"><span class="st-l">Total tasks</span><span class="st-v">${tot}</span></div>
+     <div class="st-row"><span class="st-l">Completed</span><span class="st-v">${dn} (${tot?Math.round(dn/tot*100):0}%)</span></div>`;
+}
+
+function buildCreds() {
+  document.getElementById('sbCreds').innerHTML=`
+    <div style="padding:0 14px 14px">
+      <div class="sb-sec-lbl">Sync</div>
+      <div class="sb-creds">
+        <div class="sc-title">JSONbin.io</div>
+        <div class="sc-row"><div class="sc-lbl">Bin ID</div><div class="sc-val">${BIN||'— not configured'}</div></div>
+        <div class="sc-row"><div class="sc-lbl">Key</div><div class="sc-val">${KEY?KEY.substring(0,14)+'••••••••':'— not configured'}</div></div>
+        <button class="sc-btn" onclick="openCredModal()">Edit Credentials</button>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════════════════════════
+function setF(f){filt=f;buildMain();}
+function goToday(){selD=new Date();calM=new Date(selD.getFullYear(),selD.getMonth(),1);sv('day');}
+function selDay(key){selD=new Date(key+'T12:00:00');calM=new Date(selD.getFullYear(),selD.getMonth(),1);buildMiniCal();sv('day');}
+
+async function tog(key,id){
+  const t=(tasks[key]||[]).find(x=>x.id===id); if(!t)return;
+  t.done=!t.done; buildMain(); buildStats();
+  await cloudSave();
+  showToast(t.done?'Task marked complete':'Task reopened');
+}
+
+async function delTask(key,id){
+  const arr=tasks[key]||[];
+  const idx=arr.findIndex(x=>x.id===id); if(idx<0)return;
+  deleted={key,task:{...arr[idx]},idx};
+  arr.splice(idx,1);
+  buildMain(); buildMiniCal(); buildStats();
+  await cloudSave();
+  startUndoBar();
+}
+
+function startUndoBar(){
+  clearInterval(undoInterval);
+  undoSecs=8;
+  document.getElementById('undoTaskName').textContent=deleted?.task?.title||'—';
+  document.getElementById('undoBar').style.display='flex';
+  updateUndoTimer();
+  undoInterval=setInterval(()=>{
+    undoSecs--;updateUndoTimer();
+    if(undoSecs<=0){clearInterval(undoInterval);dismissUndo();}
+  },1000);
+}
+function updateUndoTimer(){document.getElementById('undoTimer').textContent=`${undoSecs}s`;}
+function dismissUndo(){
+  clearInterval(undoInterval);
+  document.getElementById('undoBar').style.display='none';
+  deleted=null;
+}
+async function undoDelete(){
+  if(!deleted)return;
+  const{key,task,idx}=deleted;
+  if(!tasks[key])tasks[key]=[];
+  tasks[key].splice(idx,0,task);
+  deleted=null; dismissUndo();
+  buildMain(); buildMiniCal(); buildStats();
+  await cloudSave();
+  showToast('Task restored');
+}
+
+async function addTask(key){
+  const ti=document.getElementById('ai-'+key); const ci=document.getElementById('ac-'+key);
+  const title=ti?.value.trim(); if(!title)return;
+  const cat=ci?.value||'ops';
+  if(!tasks[key])tasks[key]=[];
+  tasks[key].push({id:'u'+Date.now(),title,cat,done:false});
+  ti.value=''; buildMain(); buildMiniCal(); buildStats();
+  await cloudSave();
+  showToast('Task added');
+}
+
+function upRoi(k,v){roi[k]=v;cloudSave();}
+
+// ════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════
+let toastTmr=null;
+function showToast(msg){
+  clearTimeout(toastTmr);
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  toastTmr=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ════════════════════════════════════════════════════════════
+// MODAL HELPERS
+// ════════════════════════════════════════════════════════════
+function showOverlay(id){document.getElementById(id).style.display='flex';}
+function hideOverlay(id){document.getElementById(id).style.display='none';}
+function closeModal(id){hideOverlay(id);}
+
+// ════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════
+function dk(d){return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;}
+function p2(n){return String(n).padStart(2,'0');}
+function cp(o){return JSON.parse(JSON.stringify(o));}
+
+boot();
+</script>
+</body>
+</html>
